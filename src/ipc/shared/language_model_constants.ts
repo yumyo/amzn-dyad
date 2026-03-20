@@ -461,6 +461,15 @@ export const MODEL_OPTIONS: Record<string, ModelOption[]> = {
   ],
   bedrock: [
     {
+      name: "us.anthropic.claude-opus-4-6-20250514-v1:0",
+      displayName: "Claude Opus 4.6",
+      description:
+        "Anthropic's most powerful model with extended reasoning (note: >200k tokens is very expensive!)",
+      maxOutputTokens: 32_000,
+      contextWindow: 1_000_000,
+      temperature: 0,
+    },
+    {
       name: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
       displayName: "Claude 4.5 Sonnet",
       description:

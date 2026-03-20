@@ -1034,6 +1034,14 @@ export function registerAppHandlers() {
         envVars[provider.envVarName] = getEnvVar(provider.envVarName);
       }
     }
+
+    // Add AWS-specific env vars for Bedrock IAM authentication
+    envVars["AWS_PROFILE"] = getEnvVar("AWS_PROFILE");
+    envVars["AWS_REGION"] = getEnvVar("AWS_REGION");
+    envVars["AWS_ACCESS_KEY_ID"] = getEnvVar("AWS_ACCESS_KEY_ID");
+    envVars["AWS_SECRET_ACCESS_KEY"] = getEnvVar("AWS_SECRET_ACCESS_KEY");
+    envVars["AWS_SESSION_TOKEN"] = getEnvVar("AWS_SESSION_TOKEN");
+
     return envVars;
   });
 
