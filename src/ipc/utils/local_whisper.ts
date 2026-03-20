@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { writeFileSync, unlinkSync } from "fs";
+import { writeFileSync, unlinkSync, readdirSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import log from "electron-log";
@@ -30,7 +30,16 @@ export async function transcribeWithLocalWhisper(
     logger.info(`Converted audio to WAV: ${tempWavPath}`);
 
     // Run whisper.cpp transcription
-    const modelPath = join(modelsPath, "ggml-base.en.bin");
+    // Try to find any ggml model file in the models directory
+    const modelFiles = readdirSync(modelsPath).filter((f: string) => f.startsWith("ggml-") && f.endsWith(".bin"));
+
+    if (modelFiles.length === 0) {
+      throw new Error(`No Whisper model files found in ${modelsPath}`);
+    }
+
+    const modelPath = join(modelsPath, modelFiles[0]);
+    logger.info(`Using Whisper model: ${modelFiles[0]}`);
+
     const text = await runWhisperCpp(tempWavPath, modelPath);
     logger.info(`Transcription completed: ${text.substring(0, 50)}...`);
 
@@ -88,8 +97,8 @@ async function convertToWav(inputPath: string, outputPath: string): Promise<void
  */
 async function runWhisperCpp(audioPath: string, modelPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    // Try to find whisper executable in common locations
-    const whisperCmd = "whisper"; // Assumes whisper.cpp is in PATH
+    // Use harker.app's bundled whisper.cpp executable
+    const whisperCmd = "/Applications/harker.app/Contents/Resources/whisper-node/lib/whisper.cpp/main";
 
     const whisper = spawn(whisperCmd, [
       "-m", modelPath,
