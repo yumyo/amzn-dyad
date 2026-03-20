@@ -59,6 +59,28 @@ export function isProviderSetup(
     return false;
   }
 
+  // Bedrock supports IAM authentication or bearer token
+  if (provider === "bedrock") {
+    // Check for IAM credentials
+    if (envVars["AWS_ACCESS_KEY_ID"] && envVars["AWS_SECRET_ACCESS_KEY"]) {
+      return true;
+    }
+    // Check for AWS profile
+    if (envVars["AWS_PROFILE"]) {
+      return true;
+    }
+    // Check for bearer token in settings
+    if (providerSettings?.apiKey?.value) {
+      return true;
+    }
+    // Check for bearer token in env
+    const staticEnvVar = PROVIDER_TO_ENV_VAR[provider];
+    if (staticEnvVar && envVars[staticEnvVar]) {
+      return true;
+    }
+    return false;
+  }
+
   // Check API key in settings
   if (providerSettings?.apiKey?.value) {
     return true;

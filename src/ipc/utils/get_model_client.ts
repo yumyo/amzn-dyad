@@ -7,6 +7,7 @@ import { createAzure } from "@ai-sdk/azure";
 import type { LanguageModel } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import type {
   LargeLanguageModel,
   UserSettings,
@@ -452,12 +453,67 @@ function getRegularModelClient(
       };
     }
     case "bedrock": {
-      // AWS Bedrock supports API key authentication using AWS_BEARER_TOKEN_BEDROCK
-      // See: https://sdk.vercel.ai/providers/ai-sdk-providers/amazon-bedrock#api-key-authentication
-      const provider = createAmazonBedrock({
-        apiKey: apiKey,
-        region: getEnvVar("AWS_REGION") || "us-east-1",
-      });
+      // AWS Bedrock supports multiple authentication methods:
+      // 1. IAM authentication (AWS SDK credential chain) - PRIMARY
+      // 2. Explicit IAM credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) - FALLBACK 1
+      // 3. Bearer token authentication (AWS_BEARER_TOKEN_BEDROCK) - FALLBACK 2
+
+      const region = getEnvVar("AWS_REGION") || "us-east-1";
+      const awsAccessKeyId = getEnvVar("AWS_ACCESS_KEY_ID");
+      const awsSecretAccessKey = getEnvVar("AWS_SECRET_ACCESS_KEY");
+      const awsSessionToken = getEnvVar("AWS_SESSION_TOKEN");
+
+      let provider;
+
+      // Try IAM authentication first (most common for AWS services)
+      if (awsAccessKeyId && awsSecretAccessKey) {
+        // Use explicit IAM credentials
+        logger.info("Using AWS IAM credentials for Bedrock authentication");
+        provider = createAmazonBedrock({
+          region,
+          accessKeyId: awsAccessKeyId,
+          secretAccessKey: awsSecretAccessKey,
+          sessionToken: awsSessionToken || undefined,
+        });
+      } else if (getEnvVar("AWS_PROFILE") || process.env.HOME) {
+        // Use AWS SDK credential provider chain
+        // This supports: credentials file, IAM roles, ECS roles, etc.
+        try {
+          logger.info("Using AWS SDK credential chain for Bedrock authentication");
+          provider = createAmazonBedrock({
+            region,
+            credentialProvider: fromNodeProviderChain(),
+          });
+        } catch (error) {
+          logger.warn("Failed to initialize AWS credential chain, falling back to bearer token", error);
+          // Fall through to bearer token authentication
+          if (apiKey) {
+            logger.info("Using bearer token for Bedrock authentication (fallback)");
+            provider = createAmazonBedrock({
+              apiKey: apiKey,
+              region,
+            });
+          } else {
+            throw new Error(
+              "AWS Bedrock authentication failed. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, " +
+              "configure AWS credentials file with AWS_PROFILE, or provide AWS_BEARER_TOKEN_BEDROCK."
+            );
+          }
+        }
+      } else if (apiKey) {
+        // Fallback to bearer token authentication (backward compatibility)
+        logger.info("Using bearer token for Bedrock authentication");
+        provider = createAmazonBedrock({
+          apiKey: apiKey,
+          region,
+        });
+      } else {
+        throw new Error(
+          "AWS Bedrock authentication failed. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, " +
+          "configure AWS credentials file with AWS_PROFILE, or provide AWS_BEARER_TOKEN_BEDROCK."
+        );
+      }
+
       return {
         modelClient: {
           model: provider(model.name),

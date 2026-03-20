@@ -583,7 +583,7 @@ export const CLOUD_PROVIDERS: Record<
   bedrock: {
     displayName: "AWS Bedrock",
     hasFreeTier: false,
-    websiteUrl: "https://console.aws.amazon.com/bedrock/",
+    websiteUrl: "https://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html",
     gatewayPrefix: "bedrock/",
     secondary: true,
   },
