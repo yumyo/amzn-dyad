@@ -277,13 +277,6 @@ export default function HomePage() {
   // Main Home Page Content
   return (
     <div className="flex flex-col items-center justify-center max-w-3xl w-full m-auto p-8 relative">
-      <div className="fixed top-16 right-8 z-50">
-        {settings && hasDyadProKey(settings) ? (
-          <ManageDyadProButton className="mt-0 w-auto h-9 px-3 text-base shadow-sm bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800" />
-        ) : (
-          <SetupDyadProButton />
-        )}
-      </div>
       <ForceCloseDialog
         isOpen={forceCloseDialogOpen}
         onClose={() => setForceCloseDialogOpen(false)}
@@ -353,7 +346,6 @@ export default function HomePage() {
             </span>
           </button>
         </div>
-        <ProBanner />
       </div>
       <PrivacyBanner />
 
