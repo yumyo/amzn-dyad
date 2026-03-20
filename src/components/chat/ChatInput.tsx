@@ -210,6 +210,8 @@ export function ChatInput({ chatId }: { chatId?: number }) {
 
   const { userBudget } = useUserBudgetInfo();
   const isProEnabled = settings ? isDyadProEnabled(settings) : false;
+  const isVoiceToTextEnabled =
+    isProEnabled || !!settings?.localWhisperModelsPath;
 
   const handleTranscription = useCallback(
     (text: string) => {
@@ -219,7 +221,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
   );
 
   const { isRecording, isTranscribing, toggleRecording } = useVoiceToText({
-    enabled: isProEnabled,
+    enabled: isVoiceToTextEnabled,
     onTranscription: handleTranscription,
     onError: (message) => showErrorToast(message),
   });
@@ -719,7 +721,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
             />
 
             {/* Voice-to-text button */}
-            {isProEnabled && (
+            {isVoiceToTextEnabled && (
               <Tooltip>
                 <TooltipTrigger
                   render={

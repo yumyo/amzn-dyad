@@ -108,6 +108,12 @@ userData/
 # Claude Code
 .claude/settings.local.json
 
+# oh-my-claudecode
+.omc/
+
+# mise version manager
+mise.toml
+
 # Python
 __pycache__/
 

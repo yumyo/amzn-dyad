@@ -419,6 +419,8 @@ export function WorkflowSettings() {
   );
 }
 export function AISettings() {
+  const { settings, updateSettings } = useSettings();
+
   return (
     <div
       id={SECTION_IDS.ai}
@@ -445,6 +447,25 @@ export function AISettings() {
         <div className="text-sm text-gray-500 dark:text-gray-400">
           Automatically compact long conversations to stay within context
           limits. Original messages are preserved in the app data directory.
+        </div>
+      </div>
+
+      <div className="space-y-1 mt-4">
+        <Label htmlFor="local-whisper-path">
+          Local Whisper Models Path
+        </Label>
+        <input
+          id="local-whisper-path"
+          type="text"
+          value={settings?.localWhisperModelsPath || ""}
+          onChange={(e) =>
+            updateSettings({ localWhisperModelsPath: e.target.value })
+          }
+          placeholder="/Users/yourname/Library/Application Support/com.prakashjoshipax.VoiceInk/WhisperModels"
+          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          Path to local Whisper models directory. When set, voice-to-text will use local Whisper instead of requiring Dyad Pro. Requires whisper.cpp and ffmpeg to be installed.
         </div>
       </div>
     </div>

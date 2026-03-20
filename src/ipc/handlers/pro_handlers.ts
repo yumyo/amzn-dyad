@@ -9,6 +9,7 @@ import { z } from "zod";
 import { audioContracts } from "../types/audio";
 import type { TranscribeAudioParams } from "../types/audio";
 import { transcribeWithDyadEngine } from "../utils/llm_engine_provider";
+import { transcribeWithLocalWhisper } from "../utils/local_whisper";
 
 export const UserInfoResponseSchema = z.object({
   usedCredits: z.number(),
@@ -106,16 +107,28 @@ export function registerProHandlers() {
     audioContracts.transcribeAudio,
     async (_event, input: TranscribeAudioParams) => {
       const settings = readSettings();
+      const audioBuffer = Buffer.from(input.audioData);
+
+      // Check if local Whisper is configured
+      if (settings.localWhisperModelsPath) {
+        logger.info("Using local Whisper for transcription");
+        const text = await transcribeWithLocalWhisper(
+          audioBuffer,
+          settings.localWhisperModelsPath,
+        );
+        return { text };
+      }
+
+      // Fall back to Dyad Pro backend
       const apiKey = settings.providerSettings?.auto?.apiKey?.value;
 
       if (!apiKey || !settings.enableDyadPro) {
         throw new Error(
-          "Dyad Pro is not enabled. Voice-to-text requires a Pro subscription.",
+          "Voice-to-text requires either local Whisper configuration or Dyad Pro subscription.",
         );
       }
 
-      const audioBuffer = Buffer.from(input.audioData);
-
+      logger.info("Using Dyad Pro backend for transcription");
       const text = await transcribeWithDyadEngine(
         audioBuffer,
         input.filename,

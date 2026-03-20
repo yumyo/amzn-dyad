@@ -353,6 +353,7 @@ const BaseUserSettingsFields = {
   enableContextCompaction: z.boolean().optional(),
   skipNotificationBanner: z.boolean().optional(),
   enableSelectAppFromHomeChatInput: z.boolean().optional(),
+  localWhisperModelsPath: z.string().optional(),
 };
 
 /**
