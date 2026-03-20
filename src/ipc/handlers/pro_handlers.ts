@@ -112,6 +112,7 @@ export function registerProHandlers() {
       // Check if local Whisper is configured
       if (settings.localWhisperModelsPath) {
         logger.info("Using local Whisper for transcription");
+        logger.info(`Local Whisper models path: ${settings.localWhisperModelsPath}`);
         const text = await transcribeWithLocalWhisper(
           audioBuffer,
           settings.localWhisperModelsPath,
