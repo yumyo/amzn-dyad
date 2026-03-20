@@ -1,5 +1,7 @@
 # Dyad
 
+> **Fork Notice:** This is a fork of Dyad enhanced to work with local AWS profiles and Bedrock access. It adds AWS IAM authentication support, allowing you to use AWS Bedrock with your local AWS credentials (AWS_PROFILE) instead of requiring bearer tokens.
+
 Dyad is a local, open-source AI app builder. It's fast, private, and fully under your control — like Lovable, v0, or Bolt, but running right on your machine.
 
 [![Image](https://github.com/user-attachments/assets/f6c83dfc-6ffd-4d32-93dd-4b9c46d17790)](https://dyad.sh/)
