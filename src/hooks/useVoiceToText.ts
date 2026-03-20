@@ -65,6 +65,9 @@ export function useVoiceToText({
 
     // Start recording
     try {
+      // Reset the skip flag when starting a new recording
+      skipOnStopProcessingRef.current = false;
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
