@@ -6,7 +6,6 @@ import {
   Mic,
   MicOff,
   Loader2,
-  Lock,
 } from "lucide-react";
 import {
   Tooltip,
@@ -35,7 +34,6 @@ import { useLoadApps } from "@/hooks/useLoadApps";
 import { AppSearchDialog } from "../AppSearchDialog";
 import { useVoiceToText } from "@/hooks/useVoiceToText";
 import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { ipc } from "@/ipc/types";
 import { useCallback, useEffect } from "react";
 import { showError } from "@/lib/toast";
 
@@ -54,6 +52,8 @@ export function HomeChatInput({
   useChatModeToggle();
   const { userBudget } = useUserBudgetInfo();
   const isProEnabled = !!userBudget && !!settings?.enableDyadPro;
+  const isVoiceToTextEnabled =
+    isProEnabled || !!settings?.localWhisperModelsPath;
 
   const handleTranscription = useCallback(
     (text: string) => {
@@ -63,7 +63,7 @@ export function HomeChatInput({
   );
 
   const { isRecording, isTranscribing, toggleRecording } = useVoiceToText({
-    enabled: isProEnabled,
+    enabled: isVoiceToTextEnabled,
     onTranscription: handleTranscription,
     onError: (message) => showError(message),
   });
@@ -188,7 +188,7 @@ export function HomeChatInput({
             />
 
             {/* Voice-to-text button */}
-            {isProEnabled ? (
+            {isVoiceToTextEnabled && (
               <Tooltip>
                 <TooltipTrigger
                   render={
@@ -226,24 +226,6 @@ export function HomeChatInput({
                       ? "Transcribing..."
                       : "Voice to text"}
                 </TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      onClick={() =>
-                        ipc.system.openExternalUrl("https://dyad.sh/pro")
-                      }
-                      aria-label="Voice to text (Pro)"
-                      className="px-2 py-2 mb-0.5 text-muted-foreground hover:text-primary rounded-lg transition-colors duration-150 cursor-pointer relative"
-                    />
-                  }
-                >
-                  <Mic size={20} />
-                  <Lock size={10} className="absolute -top-0.5 -right-0.5" />
-                </TooltipTrigger>
-                <TooltipContent>Voice to text (requires Pro)</TooltipContent>
               </Tooltip>
             )}
 
