@@ -104,6 +104,7 @@ export function useVoiceToText({
         } catch (err) {
           const message =
             err instanceof Error ? err.message : "Transcription failed";
+          console.error("Transcription error:", err);
           onError?.(message);
         } finally {
           setIsTranscribing(false);
