@@ -15,7 +15,6 @@ import {
   ChevronsUpDown,
   ChevronsDownUp,
   SendHorizontalIcon,
-  Lock,
   Mic,
   MicOff,
 } from "lucide-react";
@@ -663,7 +662,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               />
             )}
 
-          {userBudget ? (
+          {userBudget && (
             <VisualEditingChangesDialog
               iframeRef={
                 previewIframeRef
