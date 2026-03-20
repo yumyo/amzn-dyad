@@ -41,17 +41,27 @@ export function useVoiceToText({
   }, [stopMediaStream]);
 
   const toggleRecording = useCallback(async () => {
-    if (isTranscribing) return;
+    console.log("toggleRecording called:", { isRecording, isTranscribing, enabled });
+
+    if (isTranscribing) {
+      console.log("Already transcribing, ignoring click");
+      return;
+    }
 
     if (isRecording) {
       // Stop recording
+      console.log("Stopping recording, mediaRecorder state:", mediaRecorderRef.current?.state);
       if (mediaRecorderRef.current?.state === "recording") {
         mediaRecorderRef.current.stop();
+        console.log("Called stop() on mediaRecorder");
       }
       return;
     }
 
-    if (!enabled) return;
+    if (!enabled) {
+      console.log("Voice-to-text not enabled");
+      return;
+    }
 
     // Start recording
     try {
@@ -71,26 +81,33 @@ export function useVoiceToText({
       };
 
       mediaRecorder.onstop = async () => {
+        console.log("mediaRecorder.onstop triggered");
         mediaRecorderRef.current = null;
         stopMediaStream();
         if (skipOnStopProcessingRef.current) {
+          console.log("Skipping processing due to skipOnStopProcessingRef");
           chunksRef.current = [];
           return;
         }
 
+        console.log("Setting isRecording to false");
         setIsRecording(false);
 
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        console.log("Created blob, size:", blob.size);
         chunksRef.current = [];
 
         if (blob.size === 0) {
+          console.log("Blob size is 0, not transcribing");
           return;
         }
 
+        console.log("Starting transcription...");
         setIsTranscribing(true);
         try {
           const arrayBuffer = await blob.arrayBuffer();
           const audioData = Array.from(new Uint8Array(arrayBuffer));
+          console.log("Audio data length:", audioData.length);
 
           const result = await ipc.audio.transcribeAudio({
             audioData,
@@ -98,7 +115,10 @@ export function useVoiceToText({
             requestId: uuidv4(),
           });
 
+          console.log("Transcription result:", result);
+
           if (result.text.trim()) {
+            console.log("Calling onTranscription with text:", result.text.trim());
             onTranscription(result.text.trim());
           }
         } catch (err) {
@@ -107,6 +127,7 @@ export function useVoiceToText({
           console.error("Transcription error:", err);
           onError?.(message);
         } finally {
+          console.log("Setting isTranscribing to false");
           setIsTranscribing(false);
         }
       };
